@@ -1,0 +1,2 @@
+# kitabbul-pwa
+app kitabbul
