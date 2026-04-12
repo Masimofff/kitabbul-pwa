@@ -1,0 +1,156 @@
+<!-- BUNU <head> TAGINDAN DƏRHAL SONRA ƏLAVƏ EDİN -->
+<link rel="manifest" href="https://senin-github-username.github.io/senin-repo/manifest.json"/>
+<meta name="theme-color" content="#2c3e50"/>
+<link rel="apple-touch-icon" href="https://raw.githubusercontent.com/username/repo/main/icon-192x192.png"/>
+
+<!-- PWA QURAŞDIRMA POPUP STİLLƏRİ -->
+<style>
+  #pwa-install-popup {
+    display: none;
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 15px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+    z-index: 99999;
+    width: 90%;
+    max-width: 400px;
+    font-family: inherit;
+    align-items: center;
+    justify-content: space-between;
+    animation: slideUp 0.5s ease-out forwards;
+  }
+  @keyframes slideUp {
+    from { bottom: -100px; opacity: 0; }
+    to { bottom: 20px; opacity: 1; }
+  }
+  .pwa-popup-content {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+  }
+  .pwa-icon {
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+    background: #f0f0f0;
+    object-fit: cover;
+  }
+  .pwa-text h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+  }
+  .pwa-text p {
+    margin: 0;
+    font-size: 13px;
+    color: #666;
+  }
+  .pwa-buttons {
+    display: flex;
+    gap: 10px;
+  }
+  .pwa-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 14px;
+    transition: 0.2s;
+  }
+  .pwa-btn.install {
+    background: #007bff;
+    color: #fff;
+  }
+  .pwa-btn.close {
+    background: #f1f1f1;
+    color: #333;
+  }
+  .pwa-btn.install:hover { background: #0056b3; }
+  .pwa-btn.close:hover { background: #ddd; }
+</style>
+
+<!-- PWA POPUP HTML -->
+<div id="pwa-install-popup">
+  <div class="pwa-popup-content">
+    <img src="https://raw.githubusercontent.com/username/repo/main/icon-192x192.png" alt="Kitabbul App" class="pwa-icon"/>
+    <div class="pwa-text">
+      <h4>Kitabbul Tətbiqi</h4>
+      <p>App kimi yükləyin, oflayn oxuyun!</p>
+    </div>
+  </div>
+  <div class="pwa-buttons">
+    <button class="pwa-btn close" id="pwa-close-btn">Sonra</button>
+    <button class="pwa-btn install" id="pwa-install-btn">Yüklə 📲</button>
+  </div>
+</div>
+
+<!-- BUNU </body> TAGINDAN DƏRHAL ƏVVƏL ƏLAVƏ EDİN -->
+<script>
+  // 1. Service Worker Qeydiyyatı
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      // sw.js GitHub Pages və ya digər provayderdən yüklənir
+      navigator.serviceWorker.register('https://senin-github-username.github.io/senin-repo/sw.js')
+        .then((registration) => {
+          console.log('PWA Service Worker Uğurla Qeydiyyatdan Keçdi:', registration.scope);
+        })
+        .catch((error) => {
+          console.error('Service Worker Qeydiyyat Xətası:', error);
+        });
+    });
+  }
+
+  // 2. Install Popup Məntiqi
+  let deferredPrompt;
+  const pwaPopup = document.getElementById('pwa-install-popup');
+  const installBtn = document.getElementById('pwa-install-btn');
+  const closeBtn = document.getElementById('pwa-close-btn');
+
+  // Əgər istifadəçi "Sonra" deyibsə, 3 gün popup-ı gizlət
+  const PWA_DISMISSED_KEY = 'pwa_dismissed';
+  const checkDismissStatus = () => {
+    const dismissedTime = localStorage.getItem(PWA_DISMISSED_KEY);
+    if (!dismissedTime) return true;
+    const now = new Date().getTime();
+    const daysSinceDismiss = (now - parseInt(dismissedTime)) / (1000 * 60 * 60 * 24);
+    return daysSinceDismiss > 3; // 3 gündən sonra yenidən göstər
+  };
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Brauzerin özünün standart göstərdiyi dialogun qarşısını alırıq
+    e.preventDefault();
+    deferredPrompt = e;
+    
+    // Popup-ı göstər (əgər 3 gün keçibsə)
+    if (checkDismissStatus()) {
+      pwaPopup.style.display = 'flex';
+    }
+  });
+
+  installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+      // İstifadəçiyə install pəncərəsini göstəririk
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log('PWA yükləmə statusu:', outcome);
+      deferredPrompt = null;
+    }
+    pwaPopup.style.display = 'none';
+  });
+
+  closeBtn.addEventListener('click', () => {
+    pwaPopup.style.display = 'none';
+    // İstifadəçi imtina etdi, vaxtı yadda saxlayaq
+    localStorage.setItem(PWA_DISMISSED_KEY, new Date().getTime());
+  });
+
+  window.addEventListener('appinstalled', (evt) => {
+    console.log('Kitabbul PWA uğurla yükləndi!');
+    pwaPopup.style.display = 'none';
+  });
+</script>
