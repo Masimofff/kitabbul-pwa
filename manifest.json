@@ -2,7 +2,7 @@
   "name": "Kitabbul - Sənin Onlayn Kitabxanan",
   "short_name": "Kitabbul",
   "description": "Azərbaycanın ən böyük onlayn kitabxanası. Kitabları onlayn oxuyun və yükləyin.",
-  "start_url": "https://kitabbul.com/?m=1",
+  "start_url": "/?utm_source=kitabbul_pwa&utm_medium=app_installed",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2c3e50",
